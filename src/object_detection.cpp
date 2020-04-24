@@ -308,12 +308,14 @@ int main(int argc, char **argv){
         }
         
         //setup inference engine device, default is MYRIAD, but you can choose also GPU or CPU (CPU is not tested)
-        InferencePlugin OpenVino_plugin = PluginDispatcher({"../../../lib/intel64", ""}).getPluginByDevice(device);
+        Core ie;
+        // InferencePlugin OpenVino_plugin = PluginDispatcher({"../../../lib/intel64", ""}).getPluginByDevice(device);
 
         //Setup model, weights, labels and colors
         CNNNetReader network_reader;
         network_reader.ReadNetwork(network_path);
         network_reader.ReadWeights(weights_path);
+        CNNNetwork network = network_reader.getNetwork();
         std::vector<std::string> vector_labels;
         std::ifstream inputFileLabel(labels_path);
         std::copy(std::istream_iterator<std::string>(inputFileLabel),std::istream_iterator<std::string>(),std::back_inserter(vector_labels));
@@ -322,7 +324,7 @@ int main(int argc, char **argv){
         std::copy(std::istream_iterator<std::string>(inputFileColor),std::istream_iterator<std::string>(),std::back_inserter(vector_colors));
 
         //setup input stuffs
-        InputsDataMap input_info(network_reader.getNetwork().getInputsInfo());
+        InputsDataMap input_info(network.getInputsInfo());
         
         InputInfo::Ptr& input_data = input_info.begin()->second;
         auto inputName = input_info.begin()->first;
@@ -332,10 +334,10 @@ int main(int argc, char **argv){
         input_data->getInputData()->setLayout(Layout::NHWC);
 
         //setup output
-        OutputsDataMap output_info(network_reader.getNetwork().getOutputsInfo());
+        OutputsDataMap output_info(network.getOutputsInfo());
         DataPtr& output_data = output_info.begin()->second;
         auto outputName = output_info.begin()->first;
-        const int num_classes = network_reader.getNetwork().getLayerByName(outputName.c_str())->GetParamAsInt("num_classes");
+        const int num_classes = network.getLayerByName(outputName.c_str())->GetParamAsInt("num_classes");
         if (vector_labels.size() != num_classes) {
         if (vector_labels.size() == (num_classes - 1))
                 vector_labels.insert(vector_labels.begin(), "no-label");
@@ -353,11 +355,11 @@ int main(int argc, char **argv){
         output_data->setLayout(Layout::NCHW);
 
         //load model into plugin
-        ExecutableNetwork model_network = OpenVino_plugin.LoadNetwork(network_reader.getNetwork(), {});
+        ExecutableNetwork executable_network = ie.LoadNetwork(network, device);
 
         //inference request to engine
-        InferRequest::Ptr engine_next = model_network.CreateInferRequestPtr();
-        InferRequest::Ptr engine_curr = model_network.CreateInferRequestPtr();
+        InferRequest::Ptr engine_next = executable_network.CreateInferRequestPtr();
+        InferRequest::Ptr engine_curr = executable_network.CreateInferRequestPtr();
 
         //start stuffs
         bool is_first_frame = true;
