@@ -23,7 +23,7 @@
         <param name="video_device"     value="/dev/video0"/>
     </node>
 
-    <node name="object_detection" pkg="ros_openvino" type="object_detection" output="screen" launch-prefix="xterm -e gdb --args">
+    <node name="object_detection" pkg="ros_openvino" type="object_detection" output="screen">
         <remap from="/object_detection/input_image" to="/usb_cam/image_raw" />
         <param name="threshold"         value="0.5" />
         <param name="target"            value="CPU" />
