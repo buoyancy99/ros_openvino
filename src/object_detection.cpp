@@ -337,19 +337,13 @@ int main(int argc, char **argv){
         OutputsDataMap output_info(network.getOutputsInfo());
         DataPtr& output_data = output_info.begin()->second;
         auto outputName = output_info.begin()->first;
-        const int num_classes = network.getLayerByName(outputName.c_str())->GetParamAsInt("num_classes");
-        if (vector_labels.size() != num_classes) {
-        if (vector_labels.size() == (num_classes - 1))
-                vector_labels.insert(vector_labels.begin(), "no-label");
-            else
-                vector_labels.clear();
-        }
+        const int num_classes = vector_labels.size();
         const SizeVector output_dimension = output_data->getTensorDesc().getDims();
         const int results_number = output_dimension[2];
         const int object_size = output_dimension[3];
-        if ((object_size != 7 || output_dimension.size() != 4)) {
-            ROS_ERROR("There is a problem with output dimension");
-        }
+        // if ((object_size != 7 || output_dimension.size() != 4)) {
+        //     ROS_ERROR("There is a problem with output dimension");
+        // }
 
         output_data->setPrecision(Precision::FP32);
         output_data->setLayout(Layout::NCHW);

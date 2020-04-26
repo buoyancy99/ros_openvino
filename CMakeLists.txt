@@ -271,6 +271,12 @@ include_directories(
 add_executable(object_detection
   src/object_detection.cpp
 )
+
+add_executable(test_utils
+  src/utils.cpp
+  src/decode_output.cpp
+)
+
 add_dependencies(object_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(object_detection
   ${catkin_LIBRARIES}
